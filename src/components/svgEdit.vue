@@ -65,8 +65,7 @@ onMounted(() => {
 			"ext-opensave", 
 			"ext-overview_window", 
 			"ext-panning", 
-			"ext-polystar",
-			"ext-shapes" 
+			"ext-polystar"
 		],
 		noDefaultExtensions: true,
 		userExtensions: []
