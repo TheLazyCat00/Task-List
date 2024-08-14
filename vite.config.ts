@@ -6,6 +6,6 @@ import Components from 'unplugin-vue-components/vite'
 export default defineConfig({
 	plugins: [vue(), Components({}),],
 	base: process.env.NODE_ENV === 'production'
-	? `./`
-	: '/',
+		? `./`
+		: '/',
 });
