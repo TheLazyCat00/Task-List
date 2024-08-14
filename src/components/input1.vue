@@ -2,7 +2,7 @@
 	<div>
 		<div class="container">
 			<div class="input1">
-				<input type="text" ref="input1" @input="hasFile" spellcheck="false">
+				<input type="text" ref="input1" spellcheck="false">
 				<button @click="add">+</button>
 			</div>
 			<div class="tasks" v-if="tasks && tasks.length > 0">
@@ -129,15 +129,6 @@ function getTasks(){
 		tasks.push(element.closing());
 	}
 	return tasks;
-}
-
-function hasFile(){
-	if(input1.value.value.endsWith("[file")){
-		window.ipcRenderer.openFileDialog();
-		window.ipcRenderer.selectedFile().then(path => {
-			input1.value.value += ":\\\\\\" + path;
-		});
-	}
 }
 
 document.addEventListener("keydown", (event) => {
