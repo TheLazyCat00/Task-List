@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<input1 :tasks="tasks" ref="input" class="input"></input1>
+		<input1 :tasks1="tasks" ref="input" class="input"></input1>
 	</div>
 </template>
 
