@@ -6,7 +6,7 @@
 				<button @click="add">+</button>
 			</div>
 			<div class="tasks" v-if="tasks && tasks.length > 0">
-				<taskElement ref="taskElement1" @deleteTask="deleteTask(index)" @toggleDone="toggleDone(index)" :text="task.top.text" :tasks="task.bottom" :done="task.top.done" :image="task.top.image" :hasChildren="task.top.hasChildren" v-for="(task, index) in tasks"/>
+				<taskElement ref="taskElement1" @deleteTask="deleteTask(index)" @toggleDone="toggleDone(index)" :isExpanded="task.top.isExpanded" :text="task.top.text" :tasks="task.bottom" :done="task.top.done" :image="task.top.image" v-for="(task, index) in tasks"/>
 			</div>
 		</div>
 	</div>
@@ -80,20 +80,20 @@ $buttoncolor: hsl(213, 100%, 31%);
 </style>
 
 <script setup lang="ts">
-import { Ref, ref, watch } from 'vue';
+import { Ref, ref } from 'vue';
 
 interface Task{
 	top: {
 		text: string,
 		done: number,
 		image: string,
-		hasChildren: boolean,
+		isExpanded: boolean
 	},
 	bottom: Object
 }
 
 const props = defineProps({
-	tasks: {
+	tasks1: {
 		type: Array<Task>,
 		required: false
 	}
@@ -104,18 +104,20 @@ const emit = defineEmits(["sendList"])
 const input1: Ref<HTMLInputElement> = ref(null);
 const taskElement1 = ref(null);
 
-let tasks: Ref<Array<Task>> = ref(props.tasks || []);
-
+let tasks: Ref<Array<Task>> = ref(props.tasks1 || []);
 
 
 function add(){
 	if(input1.value.value.trim() == "") return;
-	tasks.value.push({top: {text: input1.value.value, done: 0, image: "", hasChildren: false}, bottom: null});
+	tasks.value.push({top: {text: input1.value.value, done: 0, image: "", isExpanded: false}, bottom: []});
 	input1.value.value = "";
+	emit("sendList", tasks.value);
 }
 
 function deleteTask(index: number){
+	tasks.value = getTasks();
 	tasks.value.splice(index, 1);
+	emit("sendList", tasks.value);
 }
 
 function toggleDone(index: number){
@@ -124,11 +126,15 @@ function toggleDone(index: number){
 
 function getTasks(){
 	if(!taskElement1.value) return;
-	let tasks = [];
+	let tasks1 = [];
 	for(let element of taskElement1.value){
-		tasks.push(element.closing());
+		tasks1.push(element.closing());
 	}
-	return tasks;
+	return tasks1;
+}
+
+function updateTasks(value){
+	tasks.value = value || [];
 }
 
 document.addEventListener("keydown", (event) => {
@@ -136,10 +142,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 defineExpose({
-	getTasks
-});
-
-watch(tasks.value, () => {
-	emit("sendList", tasks.value.length > 0);
+	getTasks,
+	updateTasks
 });
 </script>

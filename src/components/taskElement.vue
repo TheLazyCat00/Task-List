@@ -13,14 +13,14 @@
 					<button @click="emit('deleteTask')">
 						<img src="../assets/trash.svg" class="trash">
 					</button>
-					<button class="expand" @click="displayChildren" ref="expandButton">
+					<button class="expand" @click="toggleDisplay" ref="expandButton">
 						<p ref="expand">&lt;</p>
 					</button>
 				</div>
 			</div>
 			<div class="child" ref="child">
 				<elementWithLine>
-					<input1 :tasks="props.tasks" ref="input" @sendList="changeExpandDisplay"/>
+					<input1 :tasks1="props.tasks" ref="input" @sendList="changeExpandDisplay"/>
 				</elementWithLine>
 			</div>
 		</div>
@@ -148,7 +148,7 @@ const props = defineProps({
 		type: String,
 		required: true
 	},
-	hasChildren: {
+	isExpanded: {
 		type: Boolean,
 		required: true
 	}
@@ -169,12 +169,21 @@ let underConstruction: boolean;
 let style = ref(`background-color: ${colors[props.done]};`);
 let image = props.image;
 let isThisElement = false;
-let hasChildren = props.hasChildren;
+let isExpanded = props.isExpanded;
+let throughUser = false;
+
+function toggleDisplay(){
+	isExpanded = !isExpanded;
+	if(isExpanded){
+		throughUser = true;
+	}
+	displayChildren();
+}
 
 function displayChildren(){
 	if(underConstruction) return;
 	underConstruction = true;
-	if(expand.value.style.transform === ""){
+	if(isExpanded){
 		child.value.style.display = "inline-block";
 		child.value.style.height = "";
 		height = child.value.clientHeight;
@@ -201,11 +210,32 @@ function displayChildren(){
 			child.value.style.display = "none";
 			underConstruction = false;
 		}, 300);
+		throughUser = false;
+	}
+}
+
+function displayChildrenNoAnim(){
+	if(underConstruction) return;
+	underConstruction = true;
+	if(isExpanded){
+		expand.value.style.transform = "rotate(-90deg)";
+		child.value.style.display = "inline-block";
+		child.value.style.height = "";
+		child.value.style.marginTop = "0.4cm";
+		underConstruction = false;
+	}
+	else{
+		expand.value.style.transform = "";
+		child.value.style.display = "none";
+		child.value.style.height = "0";
+		child.value.style.marginTop = "0";
+		underConstruction = false;
+		throughUser = false;
 	}
 }
 
 function closing(){
-	return {top: {text: props.text, done: props.done, image, hasChildren}, bottom: input.value.getTasks()};
+	return {top: {text: props.text, done: props.done, image, isExpanded}, bottom: input.value.getTasks()};
 }
 
 function changeRangeDisplay(finishDate){
@@ -295,9 +325,8 @@ function getLoadingBar(thisFinishDate, color: number){
 	`;
 }
 
-function changeExpandDisplay(hasChildren1){
-	hasChildren = hasChildren1;
-	if (hasChildren){
+function changeExpandDisplay(tasks){
+	if (tasks.length > 0) {
 		expandButton.value.classList.remove("expand");
 		expandButton.value.classList.add("expandSpecial");
 	}
@@ -336,11 +365,20 @@ defineExpose({
 onMounted(() => {
 	modifyText();
 	changeButtonEditorColor();
-	changeExpandDisplay(props.hasChildren);
+	changeExpandDisplay(props.tasks || []);
+	displayChildren();
 });
 
 watch(props, () => {
 	modifyText();
+	image = props.image;
+	changeButtonEditorColor();
+	changeExpandDisplay(props.tasks || []);
+	input.value.updateTasks(props.tasks);
+	// if(props.isExpanded != isExpanded && !throughUser){
+	// 	isExpanded = props.isExpanded;
+	// 	displayChildrenNoAnim();
+	// }
 });
 
 eventBus.on("goToList", () => {
